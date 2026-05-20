@@ -3,7 +3,7 @@
 **ProTasker** bu murakkab bo'lmagan, lekin o'zida katta imkoniyatlarni mujassam etgan zamonaviy to-do list veb ilovasi. 
 Bu loyiha foydalanuvchilarning kundalik vazifalarini, loyihalarini samarali boshqarish, hamda ish unumdorligini yanada oshirishiga ko'maklashadi. 
 Loyiha ilg'or "Editorial Aesthetic" dizayn andozalari asosida qurilgan!
-
+Live Preview: https://sanjarbek404.github.io/protasker/
 ## 🚀 Asosiy Imkoniyatlar
 - **Editorial Dizayn:** Chiroyli qora-oq klassik interfeys (`Playfair Display`, `Inter` shriftlari bilan).
 - **Vazifalar boshqaruvi:** Yangi vazifalarni qo'shish, muddat belgilash (kalendar), ustuvorliklarini (past, o'rta, yuqori) sozlash va toifalarga (shaxsiy, ish, loyiha) ajratish.
