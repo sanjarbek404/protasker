@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { motion, AnimatePresence } from 'motion/react';
+import { Menu, X, Search, Calendar as CalendarIcon, ChevronLeft, ChevronRight, CheckCircle2, ChevronDown, UserCircle, Plus } from 'lucide-react';
 
 export default function EditorialApp() {
   const { tasks, addTask, updateTask, deleteTask, categories, userProfile, updateUserProfile } = useTasks();
@@ -19,6 +20,8 @@ export default function EditorialApp() {
   const [newTaskPriority, setNewTaskPriority] = useState<Priority>('medium');
   const [newTaskCategoryId, setNewTaskCategoryId] = useState<string>('');
   const [activeTab, setActiveTab] = useState<'today' | 'planned' | 'important'>('today');
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const [showCalendar, setShowCalendar] = useState(false);
   const [calendarMonth, setCalendarMonth] = useState(new Date());
@@ -95,6 +98,13 @@ export default function EditorialApp() {
     displayedTasks = tasks.filter(t => t.status !== 'done');
   }
 
+  if (searchQuery.trim()) {
+    displayedTasks = displayedTasks.filter(t => 
+      t.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+      t.description?.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }
+
   const currentDate = new Date();
 
   const monthStart = startOfMonth(calendarMonth);
@@ -104,20 +114,32 @@ export default function EditorialApp() {
   const calendarDays = eachDayOfInterval({ start: startDate, end: endDate });
 
   return (
-    <motion.div 
-      initial={{ opacity: 0 }} 
-      animate={{ opacity: 1 }} 
-      transition={{ duration: 0.6, ease: "easeOut" }}
-      className="grid h-screen text-editorial-text font-sans bg-editorial-bg" 
-      style={{ gridTemplateColumns: '260px 1fr 300px' }}
-    >
+    <div className="flex h-screen text-editorial-text font-sans bg-editorial-bg w-full overflow-hidden relative">
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <motion.div 
+            initial={{ opacity: 0 }} 
+            animate={{ opacity: 1 }} 
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 lg:hidden"
+            onClick={() => setIsMobileMenuOpen(false)}
+          />
+        )}
+      </AnimatePresence>
+
       {/* Left Sidebar */}
-      <aside className="border-r border-editorial-border p-8 flex flex-col justify-between h-full bg-editorial-sidebar overflow-y-auto">
-        <motion.div initial={{ x: -20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.1, duration: 0.5 }}>
-          <div className="mb-12">
-            <h1 className="font-serif italic text-3xl tracking-tighter">Vazifa.</h1>
-            <p className="text-[10px] uppercase tracking-[0.2em] opacity-60 font-semibold mt-1">Professional Boshqaruv</p>
-          </div>
+      <aside className={`fixed inset-y-0 left-0 z-50 w-[280px] lg:w-[260px] transform transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0 ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'} bg-editorial-sidebar border-r border-editorial-border flex flex-col justify-between h-full shadow-2xl lg:shadow-none`}>
+        <div className="flex-1 overflow-y-auto p-8 custom-scrollbar">
+          <motion.div initial={{ x: -20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.1, duration: 0.5 }}>
+            <div className="flex justify-between items-start mb-12">
+              <div>
+                <h1 className="font-serif italic text-3xl tracking-tighter">Vazifa.</h1>
+                <p className="text-[10px] uppercase tracking-[0.2em] opacity-60 font-semibold mt-1">Boshqaruv</p>
+              </div>
+              <button className="lg:hidden p-2 -mr-3 -mt-2 text-gray-500 hover:text-black transition-colors rounded-full hover:bg-black/5" onClick={() => setIsMobileMenuOpen(false)}>
+                <X size={20} />
+              </button>
+            </div>
 
           <nav className="space-y-6">
             <div className="group cursor-pointer">
@@ -163,57 +185,101 @@ export default function EditorialApp() {
           </nav>
         </motion.div>
 
-        <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.3, duration: 0.5 }} className="mt-8">
-          <div 
-            onClick={openProfileEdit}
-            className="flex items-center gap-3 p-3 rounded-xl bg-white/50 border border-editorial-border hover:bg-white transition-colors cursor-pointer group shadow-sm hover:shadow-md"
-          >
-            <div className="w-10 h-10 rounded-full bg-black flex items-center justify-center text-white font-serif italic font-bold group-hover:scale-105 transition-transform overflow-hidden relative">
-              {userProfile.avatar ? (
-                <img src={userProfile.avatar} alt={userProfile.name} className="w-full h-full object-cover" />
-              ) : (
-                <span>{userProfile.name.charAt(0)}</span>
-              )}
+        </div>
+        <div className="p-8 border-t border-editorial-border mt-auto w-full">
+          <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.3, duration: 0.5 }}>
+            <div 
+              onClick={openProfileEdit}
+              className="flex items-center gap-3 p-3 rounded-xl bg-white/50 border border-editorial-border hover:bg-white transition-colors cursor-pointer group shadow-sm hover:shadow-md"
+            >
+              <div className="w-10 h-10 rounded-full bg-black flex items-center justify-center text-white font-serif italic font-bold group-hover:scale-105 transition-transform overflow-hidden relative">
+                {userProfile.avatar ? (
+                  <img src={userProfile.avatar} alt={userProfile.name} className="w-full h-full object-cover" />
+                ) : (
+                  <span>{userProfile.name.charAt(0)}</span>
+                )}
+              </div>
+              <div className="flex-1 overflow-hidden">
+                <p className="text-xs font-bold truncate">{userProfile.name}</p>
+                <p className="text-[10px] opacity-60 uppercase tracking-wider truncate">{userProfile.role}</p>
+              </div>
             </div>
-            <div className="flex-1 overflow-hidden">
-              <p className="text-xs font-bold truncate">{userProfile.name}</p>
-              <p className="text-[10px] opacity-60 uppercase tracking-wider truncate">{userProfile.role}</p>
-            </div>
-          </div>
-        </motion.div>
+          </motion.div>
+        </div>
       </aside>
 
       {/* Main Content */}
-      <main className="p-12 flex flex-col h-full bg-white overflow-y-auto w-full relative drop-shadow-sm">
-        <header className="flex justify-between items-end mb-12 flex-shrink-0">
-          <motion.div initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.2, duration: 0.5 }} className="max-w-md">
-            <h2 className="font-serif text-6xl leading-[0.9] mb-4 text-[#1A1A1A]">
+      <main className="flex-1 flex flex-col h-full bg-white relative min-w-0 drop-shadow-sm">
+        
+        {/* Mobile Header */}
+        <div className="lg:hidden flex items-center justify-between p-4 border-b border-editorial-border bg-white flex-shrink-0 z-10 sticky top-0">
+          <div className="flex items-center gap-3">
+            <button onClick={() => setIsMobileMenuOpen(true)} className="p-2 -ml-2 text-gray-700 hover:text-black transition-colors rounded-full hover:bg-gray-100">
+              <Menu size={24} />
+            </button>
+            <h1 className="font-serif italic text-2xl tracking-tighter">Vazifa.</h1>
+          </div>
+          <div className="w-9 h-9 rounded-full bg-black flex items-center justify-center text-white font-serif italic font-bold overflow-hidden cursor-pointer shadow-sm" onClick={openProfileEdit}>
+            {userProfile.avatar ? (
+              <img src={userProfile.avatar} alt="Avatar" className="w-full h-full object-cover" />
+            ) : (
+              <span className="text-sm">{userProfile.name.charAt(0)}</span>
+            )}
+          </div>
+        </div>
+
+        <div className="flex-1 flex flex-col p-6 md:p-10 lg:p-12 overflow-y-auto w-full custom-scrollbar">
+          <header className="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 md:mb-12 flex-shrink-0 gap-6">
+            <motion.div initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.2, duration: 0.5 }} className="w-full md:w-auto flex-1">
+              <div className="mb-6 md:mb-8 relative w-full lg:max-w-sm hidden lg:block">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+                <Input 
+                  placeholder="Vazifalarni qidirish..." 
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-9 h-10 bg-gray-50/50 border-gray-200 focus-visible:ring-black rounded-lg w-full text-sm placeholder:text-gray-400"
+                />
+              </div>
+              <h2 className="font-serif text-5xl md:text-6xl leading-[0.9] mb-4 text-[#1A1A1A]">
               Bugun nima <br/><span className="italic">muhim?</span>
             </h2>
             <p className="text-sm opacity-60 mt-4">
               {format(currentDate, "d-MMMM, EEEE", { locale: uz })}. Sizda hozir {tasks.filter(t => t.status === 'todo').length} ta bajarilmagan topshiriq bor.
             </p>
           </motion.div>
-          <motion.div initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.3, duration: 0.5 }} className="text-right flex flex-col justify-end items-end">
-            <p className="text-5xl font-light tracking-tighter tabular-nums">{format(currentDate, "HH:mm")}</p>
-            <p className="text-[10px] uppercase tracking-[0.3em] font-bold mt-1 text-gray-500">Toshkent, UZ</p>
+          <motion.div initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.3, duration: 0.5 }} className="text-left md:text-right flex flex-row md:flex-col justify-between md:justify-end items-center md:items-end w-full md:w-auto">
+            <div>
+              <p className="text-4xl md:text-5xl font-light tracking-tighter tabular-nums">{format(currentDate, "HH:mm")}</p>
+              <p className="text-[10px] uppercase tracking-[0.3em] font-bold mt-1 text-gray-500">Toshkent, UZ</p>
+            </div>
             
             <AnimatePresence>
               {completedTasks.length > 0 && (
-                <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} className="mt-4">
+                <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} className="mt-0 md:mt-4">
                    <button 
                      onClick={clearCompleted}
                      className="text-[10px] uppercase font-bold tracking-widest text-red-500 hover:text-red-600 hover:bg-red-50 px-3 py-1.5 rounded transition-colors"
                    >
-                     Tugatilganlarni o'chirish
+                     Tugatish
                    </button>
                 </motion.div>
               )}
             </AnimatePresence>
           </motion.div>
+
+          {/* Mobile Search Bar */}
+          <div className="lg:hidden relative w-full mb-0 mt-4">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+            <Input 
+              placeholder="Vazifalarni qidirish..." 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9 h-10 bg-gray-50/50 border-gray-200 focus-visible:ring-black rounded-lg w-full text-sm placeholder:text-gray-400"
+            />
+          </div>
         </header>
 
-        <section className="flex-1 overflow-y-auto pr-4 custom-scrollbar">
+        <section className="flex-1 overflow-y-auto pr-2 md:pr-4 custom-scrollbar">
           <AnimatePresence mode="popLayout">
             {displayedTasks.length === 0 ? (
                <motion.div 
@@ -363,28 +429,29 @@ export default function EditorialApp() {
           )}
         </AnimatePresence>
 
-        <motion.footer initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }} className="mt-8 pt-8 border-t border-editorial-card-border flex gap-4 flex-shrink-0">
+        <motion.footer initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }} className="mt-6 md:mt-8 pt-6 md:pt-8 border-t border-editorial-card-border flex flex-col md:flex-row gap-4 flex-shrink-0">
           <motion.button 
             whileHover={{ scale: 1.01 }}
             whileTap={{ scale: 0.98 }}
-            onClick={() => setIsAdding(true)}
-            className="flex-1 bg-black text-white py-4 font-bold text-sm uppercase tracking-widest hover:bg-black/90 transition-colors shadow-lg border border-transparent border-t-0"
+            onClick={() => setIsAdding(!isAdding)}
+            className="flex-1 flex items-center justify-center gap-2 bg-black text-white py-4 font-bold text-sm uppercase tracking-widest hover:bg-black/90 transition-colors shadow-lg border border-transparent border-t-0"
           >
-            Yangi Vazifa +
+            <Plus size={18} /> {isAdding ? 'Bekor qilish' : 'Yangi Vazifa'}
           </motion.button>
           <motion.button 
             whileHover={{ scale: 1.01, backgroundColor: "#111827", color: "#fff" }}
             whileTap={{ scale: 0.98 }}
             onClick={() => setShowCalendar(true)}
-            className="px-8 border border-black py-4 font-bold text-sm uppercase tracking-widest transition-colors text-[#1A1A1A] bg-transparent"
+            className="md:px-8 flex items-center justify-center gap-2 border border-black py-4 font-bold text-sm uppercase tracking-widest transition-colors text-[#1A1A1A] bg-transparent"
           >
-            Kalendar
+            <CalendarIcon size={18} /> Kalendar
           </motion.button>
         </motion.footer>
+        </div>
       </main>
 
       {/* Right Sidebar */}
-      <aside className="bg-editorial-sidebar p-8 flex flex-col h-full border-l border-editorial-border overflow-y-auto">
+      <aside className="hidden xl:flex bg-editorial-sidebar p-8 flex-col h-full border-l border-editorial-border overflow-y-auto w-[300px] shadow-sm">
         <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ delay: 0.2, type: 'spring' }} className="mb-10 text-center flex-shrink-0 pt-4">
           <div className="relative inline-block">
             <svg width="140" height="140" className="-rotate-90 filter drop-shadow-sm">
@@ -552,8 +619,8 @@ export default function EditorialApp() {
                 </button>
               </div>
 
-              <div className="flex-1 overflow-y-auto p-6 bg-editorial-bg">
-                <div className="grid grid-cols-7 gap-4">
+              <div className="flex-1 overflow-y-auto overflow-x-auto p-4 md:p-6 bg-editorial-bg custom-scrollbar">
+                <div className="grid grid-cols-7 gap-2 md:gap-4 min-w-[500px] md:min-w-0">
                   {['Du', 'Se', 'Ch', 'Pa', 'Ju', 'Sh', 'Ya'].map(day => (
                     <div key={day} className="text-center font-bold text-[10px] uppercase tracking-widest opacity-40 py-2">{day}</div>
                   ))}
@@ -564,13 +631,13 @@ export default function EditorialApp() {
                     return (
                       <div 
                         key={day.toString()} 
-                        className={`min-h-[110px] border rounded-xl p-3 transition-colors ${
+                        className={`min-h-[80px] md:min-h-[110px] border rounded-xl p-2 md:p-3 transition-colors ${
                           !isCurrentMonth 
                             ? 'bg-gray-50/50 border-gray-100 opacity-60' 
                             : 'bg-white border-editorial-border shadow-sm hover:border-black/20 hover:shadow-md'
                         }`}
                       >
-                         <div className={`font-serif text-lg font-bold mb-3 ${isSameDay(day, new Date()) ? 'w-8 h-8 bg-black text-white rounded-full flex items-center justify-center -mt-1 -ml-1' : ''}`}>
+                         <div className={`font-serif text-sm md:text-lg font-bold mb-2 md:mb-3 ${isSameDay(day, new Date()) ? 'w-6 h-6 md:w-8 md:h-8 bg-black text-white rounded-full flex items-center justify-center -mt-1 -ml-1' : ''}`}>
                            {format(day, 'd')}
                          </div>
                          <div className="space-y-1.5 custom-scrollbar">
@@ -598,6 +665,6 @@ export default function EditorialApp() {
         )}
       </AnimatePresence>
 
-    </motion.div>
+    </div>
   );
 }
