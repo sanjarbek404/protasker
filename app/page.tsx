@@ -241,7 +241,7 @@ export default function EditorialApp() {
                 />
               </div>
               <h2 className="font-serif text-5xl md:text-6xl leading-[0.9] mb-4 text-[#1A1A1A]">
-              Bugun nima <br/><span className="italic">muhim?</span>
+              Bugun Qanday ishlarni bajarmiz <br/><span className="italic">muhimlari</span>
             </h2>
             <p className="text-sm opacity-60 mt-4">
               {format(currentDate, "d-MMMM, EEEE", { locale: uz })}. Sizda hozir {tasks.filter(t => t.status === 'todo').length} ta bajarilmagan topshiriq bor.
